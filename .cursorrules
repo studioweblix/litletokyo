@@ -1,0 +1,57 @@
+# StudioWeblix – Website-Template (Kundenprojekte)
+
+## Zweck dieses Repos
+- Das ist ein **wiederverwendbares Next.js-Website-Template** (z. B. Restaurant/Gastronomie).
+- Du arbeitest daran, wenn der Entwickler das Template **kopiert** und für **einen konkreten Kunden** individualisiert (Design-Feinschliff, neue Sektionen, Bugfixes, Integrationen).
+- **Kunden-Inhalte** (Texte, Bilder, Speisekarte, Öffnungszeiten, Bewertungen usw.) kommen **nicht** aus fest im Code eingetragenen Strings, sondern aus **Supabase** – pro Kunde über `NEXT_PUBLIC_TENANT_ID` und die Datenbank gepflegt.
+- Beim Individualisieren: **Architektur und Daten-Pattern des Templates beibehalten** (Server Components, `src/lib/data.ts`, keine Hardcoding-Regel brechen).
+
+## Tech-Stack
+- Next.js 14 App Router, TypeScript
+- Tailwind CSS
+- Supabase (DB, Auth, Storage)
+- Framer Motion
+- Hosting typischerweise Vercel
+
+## Daten & Supabase
+- **Keine Hardcodes** für Kundeninhalte: Texte, Bilder, strukturierte Daten über Supabase.
+- Daten laden über die Funktionen in **`src/lib/data.ts`**: u. a. `getProducts()`, `getCategories()`, `getFeaturedProducts()`, `getPageContent(slug)`, `getSettings()`, `getTenant()`, `getTestimonials()`.
+- Alle relevanten Queries sind auf **`NEXT_PUBLIC_TENANT_ID`** (`.env.local` / Deployment-Env) ausgelegt – das ist die **Kunden-Zuordnung** nach dem Kopieren des Templates.
+- Bilder: Supabase Storage Bucket **`images`**.
+
+## Schema (bestehend – nicht Schema/Migrationen willkürlich umbauen)
+- **tenants**: id, name, domain, logo_url, primary_color, secondary_color, font_heading, font_body, business_type
+- **products**, **product_images**, **categories**, **pages** (content JSONB, field_config JSONB), **store_settings**, **testimonials** (u. a. author_name, rating 1–5, text, source, date, featured, sort_order)
+
+## Bewertungen
+- `getTestimonials()`: nur `featured=true`, sortiert wie in der Data-Funktion vorgesehen.
+- Quellen im System u. a.: google, facebook, instagram, website, manual.
+- UI: Sterne, Text in Anführungszeichen, Autor, Quelle als Badge.
+
+## Code-Stil
+- **Server Components** als Standard; **`"use client"`** nur bei Bedarf (Formulare, Interaktion, Animation/State).
+- Daten in Server Components **parallel** mit **`Promise.all`** laden.
+- **`next/image`** für Bilder; **`priority`** sinnvoll auf Hero-Bildern.
+- **Mobile-first**, UI-Texte **Deutsch**.
+- **Farben/Schriften** aus Tenant: `primary_color` / `secondary_color` sowie `font_heading` / `font_body` als CSS-Variablen nutzen (wie im Template verdrahtet).
+
+## Design
+- **Ambition**: Distinctive, production-grade Frontend – **kein generisches AI-Slop**. Bewusste ästhetische Richtung pro Kundenprojekt (z. B. editorial, luxury/refined, warm-organisch, brutalist-raw – passend zum Gastro-Konzept). Bold maximalism und refined minimalism sind beide willkommen – Hauptsache intentional und exzellent ausgeführt.
+- **`frontend-design`-Skill voll nutzen**: Bei UI-/Styling-/Sektions-Aufgaben die installierte Skill unter `.agents/skills/frontend-design/SKILL.md` aktiv anwenden – Typografie-Pairings, Motion-Choreografie, Spatial Composition (Asymmetrie, Overlap, Grid-Breaking), atmosphärische Backgrounds (Gradient-Meshes, Noise, Grain, Texturen, dramatische Shadows). Keine künstliche Zurückhaltung.
+- **Motion erlaubt und erwünscht**: Staggered Reveals, Scroll-Triggering, überraschende Hover-States, gut orchestrierte Page-Load-Momente. **Framer Motion** ist im Stack. Performance (LCP, CLS) und `prefers-reduced-motion` immer respektieren; keine Lesbarkeit für Effekt opfern.
+- **Typografie & Farben – Tenant-first**: `primary_color`, `secondary_color`, `font_heading`, `font_body` aus der **`tenants`-Tabelle** sind die **Quelle der Wahrheit** und überschreiben Skill-Empfehlungen. Die Skill-Heuristiken („distinctive pairings", keine Inter/Roboto/Arial als Default) gelten für **Fallbacks, Akzent-Typografie und neue Sektions-Details** (Größen, Tracking, Display-Cuts, decorative Elemente) – nicht gegen die konkret gepflegten Tenant-Werte.
+- **Konsistenz pro Kunde**: Innerhalb **eines** Kundenprojekts durchgehend **ein** kohärentes Designsystem (Farben, Fonts, Spacings, Motion-Sprache, Shadow/Radius-Skala). Die Skill-Regel „Vary across generations, never converge" gilt **zwischen verschiedenen Kundenprojekten**, nicht innerhalb desselben.
+- **Komponenten-Hygiene**: Klein und wiederverwendbar; **Sektionen** als eigene Komponenten unter `src/components/`. Auch bei kreativen Layouts bleiben die Inhalte aus Supabase via `src/lib/data.ts` – **keine** hardcodierten Kundeninhalte als Nebeneffekt von Design-Arbeit.
+
+## Pfade (Template-Struktur)
+- `src/app/` – Routen/Seiten
+- `src/components/layout/` – Navbar, Footer
+- `src/components/home/` – Startseiten-Sektionen
+- `src/components/ui/` – UI-Bausteine
+- `src/lib/` – Supabase-Client, Data-Funktionen
+- `src/types/` – TypeScript-Typen
+
+## Kurz: Was du beim „Template für Kunde X" tust
+- Individualisierung in **Komponenten, Styles, ggf. neue Sektionen** – weiterhin **Daten aus Supabase** und **bestehende Data-Layer-Funktionen** nutzen oder sinnvoll erweitern.
+- **Keine** fest eingebauten Kunden-Texte/-Bilder als Ersatz für Datenbankinhalte.
+- Beim Design **mutig sein** und die `frontend-design`-Skill ernst nehmen – innerhalb der hier definierten Leitplanken (Multi-Tenant, Tenant-Branding, Supabase-Daten).
