@@ -73,7 +73,6 @@ export default async function HomePage() {
         kicker={str(h.testimonials_kicker, "Kundenstimmen")}
         title={str(h.testimonials_title, "Was sagen unsere Gäste?")}
       />
-      <div className="py-10 bg-[var(--color-dark)]" />
       <InfoCards
         cards={[
           {

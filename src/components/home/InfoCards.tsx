@@ -15,15 +15,13 @@ interface InfoCardsProps {
   cards: InfoCard[];
 }
 
-/** Abwechselnd: Textflächen unterscheidbar, nahe Referenz (#141414 Seite vs. #1c… / #24… Kacheln) */
-const TEXT_PANEL_A = "bg-[#1c1c1c]";
-const TEXT_PANEL_B = "bg-[#262626]";
+const PANEL_BG = ["bg-[var(--color-dark-card)]", "bg-[var(--color-dark)]"];
 
 function CardImage({ src }: { src: string | null }) {
   if (!src) {
     return (
-      <div className="flex h-full w-full items-center justify-center bg-[var(--color-dark-card)] text-white/20 text-xs">
-        Bild hier einfügen
+      <div className="flex h-full w-full items-center justify-center bg-[var(--color-dark-surface)] font-mono text-[10px] uppercase tracking-widest text-white/20">
+        Bild einfügen
       </div>
     );
   }
@@ -32,7 +30,7 @@ function CardImage({ src }: { src: string | null }) {
       src={src}
       alt=""
       fill
-      className="object-cover scale-[1.008] transform-gpu"
+      className="object-cover scale-[1.01] transform-gpu transition-transform duration-700 group-hover:scale-[1.04]"
       sizes="(max-width: 768px) 100vw, 50vw"
     />
   );
@@ -42,49 +40,70 @@ export function InfoCards({ cards }: InfoCardsProps) {
   if (cards.length === 0) return null;
 
   return (
-    <section className="bg-[#111111] px-4 pb-16 sm:px-6 md:pb-24 lg:px-8 lg:pb-28">
+    <section>
       {cards.map((card, i) => {
-        const imageFirst = i % 2 === 0;
-
-        const textPanelClass = i % 2 === 0 ? TEXT_PANEL_A : TEXT_PANEL_B;
+        const imageLeft = i % 2 === 0;
+        const panelBg = PANEL_BG[i % 2];
 
         return (
           <AnimatedSection key={card.title} animation="fadeIn" as="div">
-            <div className="mx-auto w-full max-w-5xl">
-              <div
-                className={`grid min-w-0 gap-0 overflow-hidden md:grid-cols-2 md:items-stretch ${
-                  imageFirst ? "" : "md:[direction:rtl]"
-                }`}
-              >
-                {/* Bild – gleiche Zeilenhöhe wie Text (kein max-h, sonst kürzer als die Textspalte) */}
-                <div className="relative min-h-[240px] min-w-0 overflow-hidden aspect-[4/3] md:aspect-auto md:h-full md:min-h-[280px]">
-                  <CardImage src={card.imageUrl} />
-                </div>
-
-                {/* Text */}
+            <div
+              className={`grid md:grid-cols-2 md:items-stretch ${
+                imageLeft ? "" : "md:[direction:rtl]"
+              }`}
+            >
+              {/* Bild */}
+              <div className="group relative min-h-[260px] overflow-hidden aspect-[4/3] md:aspect-auto md:min-h-[380px]">
+                <CardImage src={card.imageUrl} />
+                {/* Crimson-Linie links am Bild */}
                 <div
-                  className={`flex min-h-0 min-w-0 flex-col justify-center overflow-hidden px-6 py-12 sm:px-10 md:px-14 lg:px-20 md:h-full md:[direction:ltr] ${textPanelClass}`}
-                >
-                  <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-secondary)]">
+                  className={`absolute top-0 bottom-0 w-[3px] bg-[var(--color-crimson)] z-10 ${
+                    imageLeft ? "left-0" : "right-0"
+                  }`}
+                />
+              </div>
+
+              {/* Text */}
+              <div
+                className={`flex flex-col justify-center px-8 py-14 sm:px-12 md:px-16 lg:px-20 md:[direction:ltr] ${panelBg}`}
+              >
+                {/* Kicker */}
+                <div className="mb-6 flex items-center gap-3">
+                  <span className="block h-[2px] w-6 bg-[var(--color-crimson)]" />
+                  <p className="font-mono text-[10px] uppercase tracking-[0.38em] text-[var(--color-crimson)]">
                     {card.subtitle}
                   </p>
-                  <h3
-                    className="mt-3 font-heading text-2xl font-medium text-white md:text-3xl lg:text-4xl"
-                    style={{ fontFamily: "var(--font-heading), serif" }}
+                </div>
+
+                {/* Titel */}
+                <h3
+                  className="font-heading font-light uppercase text-white leading-[0.93]"
+                  style={{
+                    fontFamily: "var(--font-heading), serif",
+                    fontSize: "clamp(2rem, 4.5vw, 3.8rem)",
+                    letterSpacing: "-0.02em",
+                  }}
+                >
+                  {card.title}
+                </h3>
+
+                {/* Gold-Linie */}
+                <div className="mt-6 mb-6 h-px w-14 bg-[var(--color-gold)]" />
+
+                {/* Body */}
+                <p className="text-[0.9rem] leading-[1.85] text-white/55" style={{ maxWidth: "46ch" }}>
+                  {card.text}
+                </p>
+
+                {/* CTA */}
+                <div className="mt-10">
+                  <Link
+                    href={card.href}
+                    className="group inline-flex items-center gap-3 border-b border-[var(--color-gold)]/45 pb-1 font-mono text-[10px] uppercase tracking-[0.32em] text-[var(--color-gold)] transition-all hover:border-[var(--color-gold)] hover:gap-5"
                   >
-                    {card.title}
-                  </h3>
-                  <p className="mt-5 text-sm leading-relaxed text-white/65 md:text-base">
-                    {card.text}
-                  </p>
-                  <div className="mt-8">
-                    <Link
-                      href={card.href}
-                      className="inline-flex items-center justify-center rounded-sm border border-[var(--color-secondary)] px-8 py-3 text-xs font-semibold uppercase tracking-widest text-[var(--color-secondary)] transition-colors hover:bg-[var(--color-secondary)] hover:text-[var(--color-dark)]"
-                    >
-                      {card.cta}
-                    </Link>
-                  </div>
+                    {card.cta}
+                    <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
+                  </Link>
                 </div>
               </div>
             </div>

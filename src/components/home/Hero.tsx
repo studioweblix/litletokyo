@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Star } from "lucide-react";
 import { HeroScrollIndicator } from "./HeroScrollIndicator";
 
 interface HeroProps {
@@ -20,6 +19,8 @@ export function Hero({
 
   return (
     <section className="relative h-screen min-h-[600px] w-full overflow-hidden">
+
+      {/* Hintergrund */}
       <div className="absolute inset-0">
         {heroImage ? (
           <Image
@@ -27,53 +28,116 @@ export function Hero({
             alt=""
             fill
             priority
-            quality={90}
+            quality={92}
             className="object-cover"
             sizes="100vw"
           />
         ) : (
-          <div className="absolute inset-0 bg-[#1a1a1a]" />
+          <div className="absolute inset-0 bg-[var(--color-dark-card)]" />
         )}
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-dark)]/90 via-black/20 to-black/30" />
+        {/* Warmer, rötlich getönter Overlay – von links nach rechts abklingend */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#110805]/95 via-[#1C0C08]/72 to-[#110805]/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#110805]/80 via-transparent to-black/20" />
       </div>
 
-      <div className="relative z-10 flex h-full items-center justify-center px-4 sm:px-6">
-        <div className="mx-auto flex max-w-5xl flex-col items-center text-center">
-          <div
-            className="mb-5 flex justify-center gap-0.5 sm:gap-1"
-            aria-hidden
-          >
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Star
-                key={i}
-                className="h-2.5 w-2.5 shrink-0 fill-[#c9a227] text-[#c9a227] sm:h-3 sm:w-3"
-                strokeWidth={0}
-              />
-            ))}
+      {/* Crimson-Streifen: linke Kante */}
+      <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--color-crimson)] z-10" aria-hidden />
+
+      {/* Ghost: 東京 – großes Hintergrund-Wasserzeichen */}
+      <div
+        className="absolute bottom-0 right-2 z-[5] hidden lg:block select-none pointer-events-none leading-none"
+        aria-hidden
+      >
+        <span
+          className="block text-white/[0.03] font-light"
+          style={{
+            fontFamily: '"Hiragino Mincho ProN", "Yu Mincho", "MS PMincho", Georgia, serif',
+            fontSize: "clamp(9rem, 21vw, 21rem)",
+            letterSpacing: "-0.04em",
+            lineHeight: 0.95,
+          }}
+        >
+          東京
+        </span>
+      </div>
+
+      {/* Vertikaler Text rechts – Desktop */}
+      <div
+        className="absolute right-8 top-1/2 -translate-y-1/2 z-10 hidden lg:flex flex-col items-center gap-4"
+        aria-hidden
+      >
+        <span className="h-20 w-px bg-[var(--color-gold)]/35" />
+        {/* Kleines Kanji: 食 (Speise) */}
+        <span
+          className="text-[var(--color-gold)]/55"
+          style={{
+            fontFamily: '"Hiragino Mincho ProN", "Yu Mincho", "MS PMincho", Georgia, serif',
+            fontSize: "0.9rem",
+          }}
+        >
+          食
+        </span>
+        <span
+          className="font-mono text-[9px] uppercase tracking-[0.45em] text-white/30"
+          style={{ writingMode: "vertical-rl" }}
+        >
+          {heroSubtitle}
+        </span>
+        {/* 桜 = Kirschblüte / Sakura */}
+        <span
+          className="text-[var(--color-crimson)]/55"
+          style={{
+            fontFamily: '"Hiragino Mincho ProN", "Yu Mincho", "MS PMincho", Georgia, serif',
+            fontSize: "0.9rem",
+          }}
+        >
+          桜
+        </span>
+        <span className="h-20 w-px bg-[var(--color-crimson)]/35" />
+      </div>
+
+      {/* Content – links-unten */}
+      <div className="relative z-10 flex h-full flex-col justify-end pb-24 pl-10 pr-6 sm:pl-16 lg:pl-24">
+        <div className="max-w-4xl">
+
+          {/* Kicker */}
+          <div className="mb-6 flex items-center gap-4">
+            <span className="block h-[2px] w-7 bg-[var(--color-crimson)]" />
+            <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-[var(--color-crimson)]">
+              {heroSubtitle}
+            </p>
           </div>
 
-          <p
-            className="max-w-2xl text-[11px] font-normal uppercase leading-relaxed tracking-[0.35em] text-white sm:text-xs md:text-sm"
-            style={{ fontFamily: "var(--font-body), system-ui, sans-serif" }}
-          >
-            {heroSubtitle}
-          </p>
-
+          {/* Haupttitel */}
           <h1
-            className="mt-5 w-full max-w-full px-1 font-heading text-[clamp(1.35rem,calc(0.65rem+4.2vmin),5rem)] font-semibold uppercase leading-[1.05] tracking-[0.02em] text-white whitespace-nowrap"
-            style={{ fontFamily: "var(--font-heading), serif" }}
+            className="font-heading font-light uppercase text-white leading-[0.9]"
+            style={{
+              fontFamily: "var(--font-heading), serif",
+              fontSize: "clamp(3.5rem, 10.5vw, 10rem)",
+              letterSpacing: "-0.025em",
+            }}
           >
             {titleOneLine}
           </h1>
 
-          <div className="mt-10">
+          {/* Gold-Linie als Trenner */}
+          <div className="mt-8 h-px w-20 bg-[var(--color-gold)]" />
+
+          {/* CTAs */}
+          <div className="mt-10 flex flex-wrap items-center gap-4">
             <Link
               href="/speisekarte"
-              className="inline-flex max-w-fit items-center justify-center bg-[color-mix(in_srgb,var(--color-secondary)_72%,#4a3232)] px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-white transition-all hover:bg-[color-mix(in_srgb,var(--color-secondary)_78%,#4a3232)] hover:text-white sm:px-7 sm:text-xs sm:tracking-[0.28em]"
-              style={{ fontFamily: "var(--font-body), system-ui, sans-serif" }}
+              className="group inline-flex items-center gap-3 bg-[var(--color-crimson)] px-8 py-[14px] font-mono text-[10px] font-semibold uppercase tracking-[0.3em] text-white transition-all duration-300 hover:bg-[var(--color-crimson-deep)]"
             >
               {heroCta}
+              <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
+            </Link>
+            <Link
+              href="/reservierung"
+              className="group inline-flex items-center gap-3 border border-white/35 px-8 py-[14px] font-mono text-[10px] font-semibold uppercase tracking-[0.3em] text-white/75 transition-all duration-300 hover:border-[var(--color-gold)] hover:text-[var(--color-gold)]"
+            >
+              Tisch reservieren
+              <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
             </Link>
           </div>
         </div>

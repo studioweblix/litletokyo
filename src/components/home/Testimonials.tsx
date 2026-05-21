@@ -6,7 +6,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { Star } from "lucide-react";
 import type { Testimonial } from "@/types";
 
-const AUTO_SCROLL_MS = 6000;
+const AUTO_SCROLL_MS = 6500;
 
 interface TestimonialsProps {
   testimonials: Testimonial[];
@@ -22,14 +22,14 @@ function clampRating(rating: number) {
 function Stars({ rating }: { rating: number }) {
   const n = clampRating(rating);
   return (
-    <div className="flex gap-1" aria-label={`${n} von 5 Sternen`}>
+    <div className="flex gap-1.5" aria-label={`${n} von 5 Sternen`}>
       {[1, 2, 3, 4, 5].map((i) => (
         <Star
           key={i}
-          className={`h-4 w-4 ${
+          className={`h-3.5 w-3.5 ${
             i <= n
-              ? "fill-amber-400 text-amber-400"
-              : "fill-transparent text-white/25"
+              ? "fill-[var(--color-gold)] text-[var(--color-gold)]"
+              : "fill-transparent text-white/20"
           }`}
           strokeWidth={1.5}
         />
@@ -40,8 +40,8 @@ function Stars({ rating }: { rating: number }) {
 
 function getSourceLabel(source: string): string {
   const s = source.trim().toLowerCase();
-  if (s.includes("google")) return "Gästebewertung";
-  if (s.includes("facebook")) return "Gästebewertung";
+  if (s.includes("google")) return "Google Bewertung";
+  if (s.includes("facebook")) return "Facebook Bewertung";
   return "Gästebewertung";
 }
 
@@ -55,8 +55,11 @@ export function Testimonials({
   const [paused, setPaused] = useState(false);
   const len = testimonials.length;
   const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const y = useTransform(scrollYProgress, [0, 1], ["-35%", "35%"]);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
+  const y = useTransform(scrollYProgress, [0, 1], ["-28%", "28%"]);
 
   const goTo = useCallback(
     (next: number) => setIndex((next + len) % len),
@@ -74,13 +77,13 @@ export function Testimonials({
   return (
     <section
       ref={ref}
-      className="relative h-[55vh] min-h-[360px] flex items-center overflow-hidden"
+      className="relative min-h-[60vh] flex items-center overflow-hidden"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Hintergrundbild mit Parallax */}
+      {/* Parallax Hintergrund */}
       {backgroundImage ? (
-        <motion.div className="absolute inset-[-35%]" style={{ y }}>
+        <motion.div className="absolute inset-[-28%]" style={{ y }}>
           <Image
             src={backgroundImage}
             alt=""
@@ -88,21 +91,57 @@ export function Testimonials({
             quality={90}
             className="object-cover"
             sizes="100vw"
-            
           />
         </motion.div>
       ) : (
         <div className="absolute inset-0 bg-[var(--color-dark-card)]" />
       )}
 
-      {/* Inhalt */}
-      <div className="relative z-10 mx-auto w-full max-w-3xl px-6 py-20 sm:px-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-secondary)]">
-          {kicker}
-        </p>
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/72" />
+
+      {/* Kleines Crimson Anführungszeichen – Dekor */}
+      <span
+        className="pointer-events-none select-none absolute top-10 left-8 sm:left-14 lg:left-20 font-heading font-light text-[var(--color-crimson)]/25 leading-none"
+        style={{
+          fontFamily: "var(--font-heading), serif",
+          fontSize: "clamp(4rem, 9vw, 7rem)",
+          lineHeight: 1,
+        }}
+        aria-hidden
+      >
+        &ldquo;
+      </span>
+
+      {/* Content */}
+      <div className="relative z-10 mx-auto w-full max-w-4xl px-6 sm:px-12 lg:px-20 py-24">
+
+        {/* Kicker */}
+        <div className="mb-8 flex items-center gap-4">
+          <span className="block h-[2px] w-7 bg-[var(--color-crimson)]" />
+          {/* Kanji: 幸 (Glück/Wohlbefinden) */}
+          <span
+            className="text-[var(--color-crimson)] leading-none"
+            style={{
+              fontFamily: '"Hiragino Mincho ProN", "Yu Mincho", "MS PMincho", Georgia, serif',
+              fontSize: "1rem",
+            }}
+          >
+            幸
+          </span>
+          <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-[var(--color-crimson)]">
+            {kicker}
+          </p>
+        </div>
+
+        {/* Titel */}
         <h2
-          className="mt-3 font-heading text-3xl font-medium text-white md:text-4xl"
-          style={{ fontFamily: "var(--font-heading), serif" }}
+          className="font-heading font-light uppercase text-white leading-[0.93] mb-12"
+          style={{
+            fontFamily: "var(--font-heading), serif",
+            fontSize: "clamp(2rem, 5vw, 4rem)",
+            letterSpacing: "-0.02em",
+          }}
         >
           {title}
         </h2>
@@ -111,53 +150,57 @@ export function Testimonials({
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={item.id}
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -16 }}
+              exit={{ opacity: 0, y: -18 }}
               transition={{ duration: 0.4, ease: "easeOut" }}
-              className="mt-8"
             >
-              <blockquote className="text-base leading-relaxed text-white/85 md:text-lg">
-                {item.text}
+              <Stars rating={item.rating} />
+
+              <blockquote
+                className="mt-6 text-white/82 leading-[1.75]"
+                style={{ fontSize: "clamp(1rem, 2.2vw, 1.22rem)" }}
+              >
+                &ldquo;{item.text}&rdquo;
               </blockquote>
 
-              <div className="mt-6 flex items-center gap-4">
-                <Stars rating={item.rating} />
-              </div>
-
-              <div className="mt-4">
-                <cite className="not-italic text-sm font-semibold text-white">
-                  {item.author_name}
-                </cite>
-                <p className="mt-0.5 text-xs text-white/50">
-                  {getSourceLabel(item.source)}
-                </p>
+              <div className="mt-8 flex items-center gap-4">
+                <span className="h-px w-8 bg-[var(--color-gold)]/55" />
+                <div>
+                  <cite className="not-italic font-mono text-[11px] uppercase tracking-[0.3em] text-white">
+                    {item.author_name}
+                  </cite>
+                  <p className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.28em] text-white/32">
+                    {getSourceLabel(item.source)}
+                  </p>
+                </div>
               </div>
             </motion.div>
           </AnimatePresence>
         ) : (
-          <p className="mt-8 text-sm text-white/40 italic">
-            Noch keine Bewertungen vorhanden. Pflegen Sie diese im Dashboard
-            (Tabelle: testimonials, featured = true).
+          <p className="font-mono text-[11px] uppercase tracking-widest text-white/28">
+            Noch keine Bewertungen vorhanden.
           </p>
         )}
 
-        {/* Dots */}
-        <div className="mt-10 flex justify-center gap-3">
-          {(len > 1 ? testimonials : [0, 1, 2]).map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => len > 1 && setIndex(i)}
-              aria-label={`Bewertung ${i + 1}`}
-              className={`h-3 w-3 rounded-full transition-all ${
-                i === (len > 0 ? index : 0)
-                  ? "bg-white"
-                  : "bg-white/30 hover:bg-white/50"
-              }`}
-            />
-          ))}
-        </div>
+        {/* Crimson Dash-Navigation */}
+        {len > 1 && (
+          <div className="mt-12 flex items-center gap-2">
+            {testimonials.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setIndex(i)}
+                aria-label={`Bewertung ${i + 1}`}
+                className={`h-[2px] transition-all duration-300 ${
+                  i === index
+                    ? "w-8 bg-[var(--color-crimson)]"
+                    : "w-4 bg-white/22 hover:bg-white/45"
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

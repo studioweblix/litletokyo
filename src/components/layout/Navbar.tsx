@@ -8,10 +8,9 @@ import { Menu, X } from "lucide-react";
 import type { Tenant } from "@/types";
 
 const navLinks = [
-  { href: "/ueber-uns", label: "Über uns", activeFor: "/ueber-uns" },
-  { href: "/speisekarte", label: "Speisekarte", activeFor: "/speisekarte" },
-  { href: "/reservierung", label: "Reservierung", activeFor: "/reservierung" },
-  { href: "/kontakt", label: "Kontakt", activeFor: "/kontakt" },
+  { href: "/ueber-uns", label: "Über uns" },
+  { href: "/speisekarte", label: "Speisekarte" },
+  { href: "/kontakt", label: "Kontakt" },
 ];
 
 export function Navbar({ tenant }: { tenant: Tenant | null }) {
@@ -20,55 +19,57 @@ export function Navbar({ tenant }: { tenant: Tenant | null }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    function handleScroll() {
-      setScrolled(window.scrollY > 60);
-    }
+    const handleScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+  useEffect(() => setMobileOpen(false), [pathname]);
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? "bg-black/80 backdrop-blur-md shadow-lg shadow-black/30"
+          ? "bg-[#110805]/96 backdrop-blur-md border-b border-white/8 shadow-lg shadow-black/30"
           : "bg-transparent"
       }`}
     >
-      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-20 items-center justify-between">
-          {/* Logo / Name */}
-          <Link href="/" className="flex items-center gap-3 shrink-0">
-            <span className="font-heading text-xl font-semibold tracking-wide text-white">
-              {tenant?.name ?? "Restaurant"}
+      <nav className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
+        <div className="flex h-[68px] items-center justify-between gap-8">
+
+          {/* Logo */}
+          <Link href="/" className="shrink-0 group">
+            <span
+              className="font-heading font-light uppercase tracking-[0.08em] text-white transition-colors duration-200 group-hover:text-[var(--color-gold)]"
+              style={{
+                fontFamily: "var(--font-heading), serif",
+                fontSize: "clamp(1.1rem, 1.8vw, 1.35rem)",
+                letterSpacing: "0.06em",
+              }}
+            >
+              {tenant?.name ?? "Little Tokyo"}
             </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <ul className="hidden lg:flex items-center gap-10">
-            {navLinks.map(({ href, label, activeFor }) => {
-              const isActive = activeFor !== null && activeFor === pathname;
+          {/* Desktop navigation */}
+          <ul className="hidden lg:flex items-center gap-8">
+            {navLinks.map(({ href, label }) => {
+              const isActive = pathname === href;
               return (
-                <li key={label}>
+                <li key={href}>
                   <Link
                     href={href}
-                    className={`relative py-2 text-xs font-semibold uppercase tracking-widest transition-colors ${
-                      isActive
-                        ? "text-[var(--color-secondary)]"
-                        : "text-white/80 hover:text-white"
+                    className={`relative font-mono text-[10px] uppercase tracking-[0.32em] transition-colors duration-200 ${
+                      isActive ? "text-[var(--color-gold)]" : "text-white/65 hover:text-white"
                     }`}
                   >
                     {label}
                     {isActive && (
                       <motion.span
-                        layoutId="nav-underline"
-                        className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-[var(--color-secondary)]"
-                        transition={{ duration: 0.3 }}
+                        layoutId="nav-active"
+                        className="absolute -bottom-0.5 left-0 right-0 h-px bg-[var(--color-gold)]"
+                        transition={{ duration: 0.25 }}
                       />
                     )}
                   </Link>
@@ -77,19 +78,33 @@ export function Navbar({ tenant }: { tenant: Tenant | null }) {
             })}
           </ul>
 
-          {/* Mobile Toggle */}
+          {/* Desktop CTA */}
+          <div className="hidden lg:block">
+            <Link
+              href="/reservierung"
+              className={`font-mono text-[10px] uppercase tracking-[0.3em] px-6 py-2.5 transition-all duration-200 ${
+                pathname === "/reservierung"
+                  ? "bg-[var(--color-crimson)] text-white"
+                  : "bg-[var(--color-crimson)] text-white hover:bg-[var(--color-crimson-deep)]"
+              }`}
+            >
+              Reservierung
+            </Link>
+          </div>
+
+          {/* Mobile toggle */}
           <button
             type="button"
             aria-label="Menü öffnen"
             onClick={() => setMobileOpen(true)}
-            className="p-2 text-white lg:hidden"
+            className="p-2 text-white/70 hover:text-white transition-colors lg:hidden"
           >
-            <Menu className="h-6 w-6" />
+            <Menu className="h-5 w-5" strokeWidth={1.5} />
           </button>
         </div>
       </nav>
 
-      {/* Mobile Slide-In */}
+      {/* Mobile menu */}
       <AnimatePresence>
         {mobileOpen && (
           <>
@@ -97,7 +112,7 @@ export function Navbar({ tenant }: { tenant: Tenant | null }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-40 bg-black/65 backdrop-blur-sm lg:hidden"
               onClick={() => setMobileOpen(false)}
               aria-hidden
             />
@@ -105,37 +120,43 @@ export function Navbar({ tenant }: { tenant: Tenant | null }) {
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
-              transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
-              className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-xs bg-[#0d0d0d] shadow-2xl lg:hidden"
+              transition={{ type: "tween", duration: 0.28, ease: "easeOut" }}
+              className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-[280px] bg-[#110805] border-l border-white/8 lg:hidden"
             >
-              <div className="flex h-20 items-center justify-between px-6 border-b border-white/10">
-                <span className="font-heading text-lg font-semibold tracking-wide text-white">
-                  {tenant?.name ?? "Restaurant"}
+              <div className="flex h-[68px] items-center justify-between px-6 border-b border-white/8">
+                <span
+                  className="font-heading font-light uppercase text-white tracking-[0.06em]"
+                  style={{ fontFamily: "var(--font-heading), serif", fontSize: "1.15rem" }}
+                >
+                  {tenant?.name ?? "Little Tokyo"}
                 </span>
                 <button
                   type="button"
                   aria-label="Menü schließen"
                   onClick={() => setMobileOpen(false)}
-                  className="p-2 text-white"
+                  className="p-2 text-white/60 hover:text-white transition-colors"
                 >
-                  <X className="h-6 w-6" />
+                  <X className="h-5 w-5" strokeWidth={1.5} />
                 </button>
               </div>
-              <ul className="flex flex-col px-6 py-8 gap-1">
-                {navLinks.map(({ href, label, activeFor }) => (
-                  <li key={label}>
-                    <Link
-                      href={href}
-                      className={`block py-3 text-base font-medium uppercase tracking-widest transition-colors ${
-                        activeFor !== null && activeFor === pathname
-                          ? "text-[var(--color-secondary)]"
-                          : "text-white/80 hover:text-white"
-                      }`}
-                    >
-                      {label}
-                    </Link>
-                  </li>
-                ))}
+              <ul className="flex flex-col divide-y divide-white/8 px-6 py-6">
+                {[...navLinks, { href: "/reservierung", label: "Reservierung" }].map(
+                  ({ href, label }) => (
+                    <li key={href}>
+                      <Link
+                        href={href}
+                        className={`flex items-center justify-between py-5 font-mono text-[11px] uppercase tracking-[0.3em] transition-colors ${
+                          pathname === href
+                            ? "text-[var(--color-crimson)]"
+                            : "text-white/60 hover:text-white"
+                        }`}
+                      >
+                        {label}
+                        <span className="text-white/20">→</span>
+                      </Link>
+                    </li>
+                  )
+                )}
               </ul>
             </motion.aside>
           </>

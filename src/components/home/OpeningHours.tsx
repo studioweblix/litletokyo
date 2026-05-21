@@ -1,5 +1,5 @@
+import Link from "next/link";
 import { AnimatedSection } from "@/components/ui/AnimatedSection";
-import { SectionHeading } from "@/components/ui/SectionHeading";
 import type { OpeningHour, StoreSettings } from "@/types";
 
 const GERMAN_DAYS = [
@@ -59,78 +59,124 @@ export function OpeningHours({
     <AnimatedSection
       animation="slideUp"
       as="section"
-      className="relative py-20 md:py-28 bg-[var(--color-dark-card)]"
+      className="relative overflow-hidden py-24 md:py-36 bg-[var(--color-dark-surface)]"
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-2 lg:gap-16 lg:items-start">
+      {/* Ghost: 時 (Zeit) – Wasserzeichen */}
+      <div
+        className="absolute -right-6 top-0 select-none pointer-events-none hidden lg:block leading-none"
+        aria-hidden
+      >
+        <span
+          className="block font-light text-white/[0.03]"
+          style={{
+            fontFamily: '"Hiragino Mincho ProN", "Yu Mincho", "MS PMincho", Georgia, serif',
+            fontSize: "clamp(10rem, 25vw, 28rem)",
+            lineHeight: 0.9,
+          }}
+        >
+          時
+        </span>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
+        <div className="grid gap-16 lg:grid-cols-2 lg:gap-20 lg:items-start">
+
+          {/* Links: Heading + Intro */}
           <div>
-            <p className="text-sm font-medium uppercase tracking-widest text-[var(--color-secondary)]">
-              {kicker}
-            </p>
+            <div className="mb-7 flex items-center gap-3">
+              <span className="block h-[2px] w-7 bg-[var(--color-crimson)]" />
+              {/* Kanji: 時 (Zeit) */}
+              <span
+                className="text-[var(--color-crimson)] leading-none"
+                style={{
+                  fontFamily: '"Hiragino Mincho ProN", "Yu Mincho", "MS PMincho", Georgia, serif',
+                  fontSize: "1rem",
+                }}
+              >
+                時
+              </span>
+              <p className="font-mono text-[10px] uppercase tracking-[0.38em] text-[var(--color-crimson)]">
+                {kicker}
+              </p>
+            </div>
+
             <h2
-              className="mt-3 font-heading text-3xl font-medium text-white md:text-4xl lg:text-5xl"
-              style={{ fontFamily: "var(--font-heading), serif" }}
+              className="font-heading font-light uppercase text-white leading-[0.93]"
+              style={{
+                fontFamily: "var(--font-heading), serif",
+                fontSize: "clamp(2.5rem, 6vw, 5.5rem)",
+                letterSpacing: "-0.02em",
+              }}
             >
               {title}
             </h2>
-            <p className="mt-6 max-w-lg text-base text-white/60 leading-relaxed">
+
+            <div className="mt-7 mb-7 h-px w-16 bg-[var(--color-gold)]" />
+
+            <p className="text-[0.9375rem] leading-[1.85] text-white/55" style={{ maxWidth: "44ch" }}>
               {intro}
             </p>
+
+            <div className="mt-10">
+              <Link
+                href="/reservierung"
+                className="group inline-flex items-center gap-3 border border-[var(--color-crimson)] px-7 py-[14px] font-mono text-[10px] uppercase tracking-[0.3em] text-[var(--color-crimson)] transition-all duration-300 hover:bg-[var(--color-crimson)] hover:text-white"
+              >
+                Tisch reservieren
+                <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
+              </Link>
+            </div>
           </div>
 
-          {hours.length === 0 ? (
-            <p className="text-white/60">
-              Keine Öffnungszeiten hinterlegt.
-            </p>
-          ) : (
-            <div className="rounded-lg border border-white/10 bg-[var(--color-dark)]/60 backdrop-blur-sm p-6 md:p-8">
-              <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-[var(--color-secondary)]">
-                {boxKicker}
+          {/* Rechts: Tabelle */}
+          <div>
+            {hours.length === 0 ? (
+              <p className="font-mono text-[11px] uppercase tracking-widest text-white/30">
+                Keine Öffnungszeiten hinterlegt.
               </p>
-              <ul className="divide-y divide-white/10">
-                {hours.map((row) => {
-                  const isToday = row.day === todayName;
-                  const isClosed = row.closed || !row.times?.length;
-                  const timesText = isClosed
-                    ? "Ruhetag"
-                    : formatTimes(row.times ?? []);
+            ) : (
+              <>
+                <p className="font-mono text-[10px] uppercase tracking-[0.38em] text-white/35 mb-5">
+                  {boxKicker}
+                </p>
+                <ul className="divide-y divide-white/8 border-t border-white/8">
+                  {hours.map((row) => {
+                    const isToday = row.day === todayName;
+                    const isClosed = row.closed || !row.times?.length;
+                    const timesText = isClosed
+                      ? "Ruhetag"
+                      : formatTimes(row.times ?? []);
 
-                  return (
-                    <li
-                      key={row.day}
-                      className={`flex items-center justify-between gap-4 py-3.5 ${
-                        isToday ? "text-[var(--color-secondary)]" : ""
-                      }`}
-                    >
-                      <span
-                        className={`font-medium ${
-                          isToday ? "font-semibold" : "text-white"
+                    return (
+                      <li
+                        key={row.day}
+                        className={`flex items-baseline justify-between gap-4 py-[18px] ${
+                          isToday ? "text-[var(--color-crimson)]" : ""
                         }`}
                       >
-                        {row.day}
-                        {isToday && (
-                          <span className="ml-2 text-xs opacity-70">
-                            (Heute)
-                          </span>
-                        )}
-                      </span>
-                      <span
-                        className={
-                          isClosed
-                            ? "italic text-white/40"
-                            : isToday
-                              ? ""
-                              : "text-white/70"
-                        }
-                      >
-                        {timesText}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
+                        <span className={`text-[0.9rem] ${isToday ? "font-semibold" : "text-white/80"}`}>
+                          {row.day}
+                          {isToday && (
+                            <span className="ml-2 font-mono text-[9px] uppercase tracking-[0.3em] opacity-70">
+                              Heute
+                            </span>
+                          )}
+                        </span>
+                        <span
+                          className={`font-mono text-[11.5px] tabular-nums shrink-0 ${
+                            isClosed ? "italic text-white/25" : isToday ? "" : "text-white/55"
+                          }`}
+                        >
+                          {timesText}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <div className="border-b border-white/8" />
+              </>
+            )}
+          </div>
         </div>
       </div>
     </AnimatedSection>

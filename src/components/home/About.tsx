@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Star } from "lucide-react";
+import Link from "next/link";
 import { AnimatedSection } from "@/components/ui/AnimatedSection";
 import type { StoreSettings } from "@/types";
 
@@ -17,8 +17,8 @@ interface AboutProps {
 
 function ImagePlaceholder() {
   return (
-    <div className="flex h-full w-full items-center justify-center bg-[var(--color-dark-card)] text-white/20 text-xs">
-      Kein Bild
+    <div className="flex h-full w-full items-center justify-center bg-[var(--color-dark)] font-mono text-[10px] uppercase tracking-widest text-white/20">
+      KEIN BILD
     </div>
   );
 }
@@ -33,108 +33,148 @@ export function About({
 }: AboutProps) {
   const phone = settings?.phone ?? null;
   const telHref = phone ? `tel:${phone.replace(/\s/g, "")}` : null;
-  const displayTitle = title?.trim() || "Erleben Sie Gastfreundschaft";
+  const displayTitle = title?.trim() || "Unsere Geschichte";
 
   return (
     <AnimatedSection
-      animation="slideUp"
+      animation="fadeIn"
       as="section"
-      className="relative bg-[var(--color-dark)] py-20 md:py-32"
+      className="relative overflow-hidden bg-[var(--color-dark-card)]"
     >
       <div id="about" className="scroll-mt-24" aria-hidden />
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-16 lg:grid-cols-2 lg:items-center">
-          {/* Links: Text */}
-          <div>
-            <div
-              className="flex gap-0.5 sm:gap-1"
-              aria-hidden
-            >
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Star
-                  key={i}
-                  className="h-2.5 w-2.5 shrink-0 fill-[#c9a227] text-[#c9a227] sm:h-3 sm:w-3"
-                  strokeWidth={0}
-                />
-              ))}
-            </div>
 
-            {tenantName && (
-              <p className="mt-4 text-xs font-semibold uppercase tracking-widest text-[var(--color-secondary)]">
-                {tenantName}
-              </p>
-            )}
+      {/* Ghost: 味 (Geschmack) – atmosphärisches Wasserzeichen */}
+      <div
+        className="absolute top-0 right-0 select-none pointer-events-none hidden lg:block leading-none"
+        aria-hidden
+      >
+        <span
+          className="block font-light text-white/[0.03]"
+          style={{
+            fontFamily: '"Hiragino Mincho ProN", "Yu Mincho", "MS PMincho", Georgia, serif',
+            fontSize: "clamp(10rem, 24vw, 26rem)",
+            lineHeight: 0.9,
+            letterSpacing: "-0.02em",
+          }}
+        >
+          味
+        </span>
+      </div>
 
-            <h2
-              className="mt-3 font-heading text-4xl font-bold leading-tight text-white md:text-5xl lg:text-6xl"
-              style={{ fontFamily: "var(--font-heading), serif" }}
-            >
-              {displayTitle}
-            </h2>
+      <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12 py-24 md:py-36">
+        <div className="grid gap-16 lg:grid-cols-2 lg:items-center lg:gap-20">
 
-            <div className="mt-6 space-y-4 text-sm leading-relaxed text-white/70 md:text-base">
-              {text ? (
-                <p className="whitespace-pre-line">{text}</p>
-              ) : (
-                <p className="italic text-white/40">{PLACEHOLDER_TEXT}</p>
-              )}
-            </div>
-
-            {telHref && (
-              <div className="mt-10">
-                <p className="text-xs font-semibold uppercase tracking-widest text-white/60">
-                  Reservierung
-                </p>
-                <a
-                  href={telHref}
-                  className="mt-1 block text-2xl font-semibold text-[var(--color-secondary)] transition-opacity hover:opacity-80 md:text-3xl"
-                  style={{ fontFamily: "var(--font-heading), serif" }}
-                >
-                  {phone}
-                </a>
-              </div>
-            )}
-          </div>
-
-          {/* Rechts: Bild-Collage (zwei Bilder) */}
-          <div className="relative h-[420px] md:h-[520px]">
-            <div className="absolute bottom-0 left-0 aspect-[3/4] w-[52%] overflow-hidden rounded-lg shadow-2xl">
+          {/* Bild-Seite */}
+          <div className="relative">
+            <div className="relative aspect-[3/4] w-full overflow-hidden">
               {imageUrl ? (
                 <Image
                   src={imageUrl}
                   alt=""
                   fill
                   className="object-cover"
-                  sizes="(max-width: 1024px) 50vw, 30vw"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                 />
               ) : (
                 <ImagePlaceholder />
               )}
+              {/* Crimson-Linie links */}
+              <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--color-crimson)] z-10" />
             </div>
 
-            <div className="absolute right-0 top-0 aspect-[3/4] w-[44%] overflow-hidden rounded-lg shadow-2xl">
-              {imageUrl2 ? (
+            {/* Zweites Bild – klar abgesetzt, kein Chaos */}
+            {imageUrl2 && (
+              <div
+                className="absolute -bottom-8 -right-4 w-[42%] aspect-[4/5] overflow-hidden hidden md:block"
+                style={{ outline: "4px solid var(--color-dark-card)" }}
+              >
                 <Image
                   src={imageUrl2}
                   alt=""
                   fill
                   className="object-cover"
-                  sizes="(max-width: 1024px) 50vw, 25vw"
+                  sizes="25vw"
                 />
-              ) : imageUrl ? (
-                <Image
-                  src={imageUrl}
-                  alt=""
-                  fill
-                  className="object-cover object-right"
-                  sizes="(max-width: 1024px) 50vw, 25vw"
-                />
+              </div>
+            )}
+          </div>
+
+          {/* Text-Seite */}
+          <div className="lg:pl-4">
+            {/* Kicker */}
+            <div className="mb-7 flex items-center gap-3">
+              <span className="block h-[2px] w-7 bg-[var(--color-crimson)]" />
+              {/* Kanji: 味 (Geschmack/Stil) */}
+              <span
+                className="text-[var(--color-crimson)] leading-none"
+                style={{
+                  fontFamily: '"Hiragino Mincho ProN", "Yu Mincho", "MS PMincho", Georgia, serif',
+                  fontSize: "1rem",
+                }}
+              >
+                味
+              </span>
+              <p className="font-mono text-[10px] uppercase tracking-[0.38em] text-[var(--color-crimson)]">
+                {tenantName ?? "Restaurant"}
+              </p>
+            </div>
+
+            {/* Titel */}
+            <h2
+              className="font-heading font-light uppercase text-white leading-[0.93]"
+              style={{
+                fontFamily: "var(--font-heading), serif",
+                fontSize: "clamp(2.6rem, 6vw, 5.5rem)",
+                letterSpacing: "-0.02em",
+              }}
+            >
+              {displayTitle}
+            </h2>
+
+            {/* Gold-Linie */}
+            <div className="mt-7 mb-7 h-px w-16 bg-[var(--color-gold)]" />
+
+            {/* Body */}
+            <div
+              className="text-[0.9375rem] leading-[1.85] text-white/58"
+              style={{ maxWidth: "50ch" }}
+            >
+              {text ? (
+                <p className="whitespace-pre-line">{text}</p>
               ) : (
-                <ImagePlaceholder />
+                <p className="italic text-white/28">{PLACEHOLDER_TEXT}</p>
               )}
             </div>
 
-            <div className="absolute bottom-[-12px] left-[3%] -z-10 aspect-[3/4] w-[52%] rounded-lg border border-[var(--color-secondary)]/25" />
+            {/* Telefon */}
+            {telHref && (
+              <div className="mt-12 border-t border-white/10 pt-8">
+                <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-white/35 mb-2">
+                  Reservierung
+                </p>
+                <a
+                  href={telHref}
+                  className="font-heading font-light text-[var(--color-gold)] transition-opacity hover:opacity-75"
+                  style={{
+                    fontFamily: "var(--font-heading), serif",
+                    fontSize: "clamp(1.6rem, 3.5vw, 2.8rem)",
+                  }}
+                >
+                  {phone}
+                </a>
+              </div>
+            )}
+
+            {/* CTA */}
+            <div className="mt-8">
+              <Link
+                href="/ueber-uns"
+                className="group inline-flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.32em] text-white/45 transition-all hover:text-white"
+              >
+                Mehr über uns
+                <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
