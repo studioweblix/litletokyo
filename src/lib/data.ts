@@ -186,6 +186,7 @@ export async function getPageContent(slug: string): Promise<Page | null> {
 }
 
 export async function getSettings(): Promise<StoreSettings | null> {
+  noStore();
   const tenantId = getTenantId();
   if (!tenantId) return null;
   const supabase = await createClient();
@@ -200,7 +201,43 @@ export async function getSettings(): Promise<StoreSettings | null> {
     if (error.code === "PGRST116") return null;
     throw error;
   }
-  return data as StoreSettings | null;
+  if (!data) return null;
+
+  const row = data as StoreSettings;
+
+  // Das Dashboard speichert Öffnungszeiten in settings.opening_hours.
+  // Falls das direkte opening_hours-Feld leer ist, daraus befüllen.
+  const isEmptyDirect =
+    !row.opening_hours ||
+    (typeof row.opening_hours === "object" &&
+      !Array.isArray(row.opening_hours) &&
+      Object.keys(row.opening_hours).length === 0);
+
+  if (isEmptyDirect && row.settings && typeof row.settings === "object") {
+    const nested = (row.settings as Record<string, unknown>).opening_hours;
+    if (nested) {
+      row.opening_hours = nested as Record<string, unknown>;
+    }
+  }
+
+  // Kontaktdaten aus settings.contact übernehmen falls direkte Felder leer sind
+  if (row.settings && typeof row.settings === "object") {
+    const s = row.settings as Record<string, unknown>;
+    const contact = s.contact as Record<string, unknown> | undefined;
+    if (contact) {
+      if (!row.phone && contact.phone)   row.phone   = contact.phone as string;
+      if (!row.email && contact.email)   row.email   = contact.email as string;
+      if (!row.address && contact.address) row.address = contact.address as string;
+    }
+    const social = s.social as Record<string, unknown> | undefined;
+    if (social) {
+      if (!row.instagram && social.instagram) row.instagram = social.instagram as string;
+      if (!row.facebook  && social.facebook)  row.facebook  = social.facebook  as string;
+      if (!row.tiktok    && social.tiktok)    row.tiktok    = social.tiktok    as string;
+    }
+  }
+
+  return row;
 }
 
 export async function getTenant(): Promise<Tenant | null> {

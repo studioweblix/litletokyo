@@ -12,6 +12,40 @@ const GERMAN_DAYS = [
   "Samstag",
 ] as const;
 
+// Mapping englischer und kurzer Tagnamen → deutsches Label
+const DAY_NAME_MAP: Record<string, string> = {
+  monday:    "Montag",
+  tuesday:   "Dienstag",
+  wednesday: "Mittwoch",
+  thursday:  "Donnerstag",
+  friday:    "Freitag",
+  saturday:  "Samstag",
+  sunday:    "Sonntag",
+  mon:       "Montag",
+  tue:       "Dienstag",
+  wed:       "Mittwoch",
+  thu:       "Donnerstag",
+  fri:       "Freitag",
+  sat:       "Samstag",
+  sun:       "Sonntag",
+  // Bereits deutsch → durchreichen
+  montag:    "Montag",
+  dienstag:  "Dienstag",
+  mittwoch:  "Mittwoch",
+  donnerstag:"Donnerstag",
+  freitag:   "Freitag",
+  samstag:   "Samstag",
+  sonntag:   "Sonntag",
+};
+
+const DAY_ORDER = [
+  "Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag",
+];
+
+function toGermanDay(raw: string): string {
+  return DAY_NAME_MAP[raw.toLowerCase()] ?? raw;
+}
+
 function getTodayName(): string {
   return GERMAN_DAYS[new Date().getDay()];
 }
@@ -21,19 +55,109 @@ function formatTimes(times: { open: string; close: string }[]): string {
   return times.map((t) => `${t.open} – ${t.close}`).join(" & ");
 }
 
+/** Parst alle gängigen Formate, die ein Dashboard für Öffnungszeiten speichern könnte. */
 function normalizeOpeningHours(
   raw: OpeningHour[] | Record<string, unknown> | null | undefined
 ): OpeningHour[] {
   if (!raw) return [];
+
+  // ── Format A: Array mit { day, closed, times } ───────────────────────────
   if (Array.isArray(raw)) {
-    return raw.filter(
-      (item): item is OpeningHour =>
-        item != null &&
-        typeof item === "object" &&
-        "day" in item &&
-        "closed" in item
-    );
+    const result: OpeningHour[] = [];
+    for (const item of raw) {
+      if (!item || typeof item !== "object") continue;
+      const r = item as Record<string, unknown>;
+
+      const dayRaw = typeof r.day === "string" ? r.day : null;
+      if (!dayRaw) continue;
+
+      const day = toGermanDay(dayRaw);
+
+      // Format A1: { day, closed, times: [{ open, close }] }
+      if ("closed" in r) {
+        const closed = Boolean(r.closed);
+        const times = Array.isArray(r.times)
+          ? (r.times as { open: string; close: string }[])
+          : [];
+        result.push({ day, closed, times });
+        continue;
+      }
+
+      // Format A2: { day, open, close, is_closed? }
+      if (typeof r.open === "string" && typeof r.close === "string") {
+        const closed = Boolean(r.is_closed ?? r.closed ?? false);
+        result.push({
+          day,
+          closed,
+          times: closed ? [] : [{ open: r.open, close: r.close }],
+        });
+        continue;
+      }
+
+      // Format A3: { day, hours: "10:00-22:00" | [{ open, close }], closed? }
+      if (typeof r.hours === "string") {
+        const closed = Boolean(r.closed ?? r.is_closed ?? false);
+        const parts = r.hours.split("-").map((s) => s.trim());
+        const times =
+          !closed && parts.length === 2
+            ? [{ open: parts[0], close: parts[1] }]
+            : [];
+        result.push({ day, closed, times });
+        continue;
+      }
+    }
+    // In DB-Reihenfolge belassen, aber fehlende Tage anhängen
+    return result.length ? result : [];
   }
+
+  // ── Format B: Objekt { monday: { slots/times/open/close, closed? }, … } ─
+  if (typeof raw === "object") {
+    const obj = raw as Record<string, unknown>;
+    const result: OpeningHour[] = [];
+
+    for (const key of Object.keys(obj)) {
+      const day = toGermanDay(key);
+      const val = obj[key];
+      if (!val || typeof val !== "object") continue;
+      const v = val as Record<string, unknown>;
+
+      const closed = Boolean(v.closed ?? v.is_closed ?? false);
+
+      // Dashboard-Format: { slots: [{ open, close }], closed }
+      const slotsOrTimes =
+        (Array.isArray(v.slots) ? v.slots : null) ??
+        (Array.isArray(v.times) ? v.times : null);
+
+      if (slotsOrTimes) {
+        result.push({
+          day,
+          closed,
+          times: closed ? [] : (slotsOrTimes as { open: string; close: string }[]),
+        });
+        continue;
+      }
+
+      // Unterobjekt hat open/close direkt
+      if (typeof v.open === "string" && typeof v.close === "string") {
+        result.push({
+          day,
+          closed,
+          times: closed ? [] : [{ open: v.open, close: v.close }],
+        });
+        continue;
+      }
+
+      // Kein bekanntes Unterformat – als geschlossen behandeln
+      result.push({ day, closed: true, times: [] });
+    }
+
+    // Nach Standard-Wochentag-Reihenfolge sortieren
+    result.sort(
+      (a, b) => DAY_ORDER.indexOf(a.day) - DAY_ORDER.indexOf(b.day)
+    );
+    return result;
+  }
+
   return [];
 }
 

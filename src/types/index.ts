@@ -84,6 +84,8 @@ export interface StoreSettings {
   reservation_external_id: string | null;
   reservation_widget_code: string | null;
   reservation_config: ReservationConfig | Record<string, unknown> | null;
+  /** Verschachteltes JSONB-Feld – enthält u. a. opening_hours, contact, social */
+  settings: Record<string, unknown> | null;
 }
 
 export interface Reservation {
